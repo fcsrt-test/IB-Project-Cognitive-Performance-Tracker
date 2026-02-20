@@ -1,0 +1,5 @@
+{
+  "name": "Cognitive Memory Tracker",
+  "description": "A secure, longitudinal memory test application based on the RI-48 methodology for early MCI detection.",
+  "requestFramePermissions": []
+}
