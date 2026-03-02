@@ -1,7 +1,7 @@
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { db } from '../db/database';
+import { db } from '../db/database.ts';
 import { z } from 'zod';
 
 const router = express.Router();
@@ -24,16 +24,16 @@ router.post('/register', (req, res) => {
     const hashedPassword = bcrypt.hashSync(password, 10);
     const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, hashedPassword);
     
-    const token = jwt.sign({ id: result.lastInsertRowid, username }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: Number(result.lastInsertRowid), username }, JWT_SECRET, { expiresIn: '7d' });
     
     res.cookie('token', token, { 
       httpOnly: true, 
-      secure: true, // Required for SameSite=None
-      sameSite: 'none', // Required for cross-origin iframe
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      secure: true, 
+      sameSite: 'none', 
+      maxAge: 7 * 24 * 60 * 60 * 1000 
     });
     
-    res.json({ user: { id: result.lastInsertRowid, username } });
+    res.json({ user: { id: Number(result.lastInsertRowid), username } });
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errorMessage = (error as any).errors.map((e: any) => e.message).join(', ');

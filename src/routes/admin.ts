@@ -1,5 +1,5 @@
 import express from 'express';
-import { db } from '../db/database';
+import { db } from '../db/database.ts';
 import { Parser } from '@json2csv/plainjs';
 
 const router = express.Router();

@@ -4,10 +4,10 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
-import { db, initDb } from './src/db/database';
-import authRoutes from './src/routes/auth';
-import testRoutes from './src/routes/test';
-import adminRoutes from './src/routes/admin';
+import { db, initDb } from './src/db/database.ts';
+import authRoutes from './src/routes/auth.ts';
+import testRoutes from './src/routes/test.ts';
+import adminRoutes from './src/routes/admin.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
