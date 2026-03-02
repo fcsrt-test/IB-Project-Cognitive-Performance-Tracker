@@ -36,7 +36,7 @@ router.post('/register', (req, res) => {
     res.json({ user: { id: Number(result.lastInsertRowid), username } });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const errorMessage = (error as any).errors.map((e: any) => e.message).join(', ');
+      const errorMessage = error.issues.map((e: any) => e.message).join(', ');
       res.status(400).json({ error: errorMessage });
     } else {
       console.error(error);
@@ -54,16 +54,16 @@ router.post('/login', (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: Number(user.id), username: user.username }, JWT_SECRET, { expiresIn: '7d' });
     
     res.cookie('token', token, { 
       httpOnly: true, 
-      secure: true, // Required for SameSite=None
-      sameSite: 'none', // Required for cross-origin iframe
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      secure: true, 
+      sameSite: 'none', 
+      maxAge: 7 * 24 * 60 * 60 * 1000 
     });
     
-    res.json({ user: { id: user.id, username: user.username } });
+    res.json({ user: { id: Number(user.id), username: user.username } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
