@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Brain, Target, Clock, AlertCircle, CheckCircle2, XCircle, Sparkles } from 'lucide-react';
+import { Brain, Target, Clock, AlertCircle, CheckCircle2, XCircle, Sparkles, MessageSquare } from 'lucide-react';
+import Survey from './Survey';
 
 interface Term {
   category: string;
@@ -125,9 +126,10 @@ const playSound = (type: 'correct' | 'incorrect' | 'celebration' | 'jumpscare') 
 };
 
 export default function TestRunner({ onComplete }: TestRunnerProps) {
-  const [phase, setPhase] = useState<'intro' | 'encoding' | 'distractor' | 'free-recall' | 'recall' | 'results'>('intro');
+  const [phase, setPhase] = useState<'intro' | 'encoding' | 'distractor' | 'free-recall' | 'recall' | 'results' | 'survey'>('intro');
   const [screens, setScreens] = useState<Term[][]>([]);
   const [setId, setSetId] = useState<number | null>(null);
+  const [resultId, setResultId] = useState<number | null>(null);
   const [currentScreenIndex, setCurrentScreenIndex] = useState(0);
   const [promptOrder, setPromptOrder] = useState<number[]>([0, 1, 2, 3]);
   
@@ -441,7 +443,7 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
     setIsSubmitting(true);
 
     try {
-      await fetch('/api/test/submit', {
+      const res = await fetch('/api/test/submit', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -454,6 +456,8 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
           freeRecallScore
         })
       });
+      const data = await res.json();
+      if (data.id) setResultId(data.id);
       setPhase('results');
     } catch (err) {
       console.error(err);
@@ -784,12 +788,27 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
             </div>
           </div>
 
-          <button
-            onClick={onComplete}
-            className="inline-flex items-center gap-2 bg-stone-900 text-white px-8 py-4 rounded-xl hover:bg-stone-800 transition-all font-medium shadow-md"
-          >
-            <span>Return to Dashboard</span>
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => setPhase('survey')}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 text-white px-8 py-4 rounded-xl hover:bg-stone-800 transition-all font-medium shadow-md"
+            >
+              <MessageSquare className="w-4 h-4" />
+              <span>Provide Feedback</span>
+            </button>
+            <button
+              onClick={onComplete}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-stone-600 border border-stone-200 px-8 py-4 rounded-xl hover:bg-stone-50 transition-all font-medium"
+            >
+              <span>Return to Dashboard</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {phase === 'survey' && (
+        <div className="py-12">
+          <Survey resultId={resultId || undefined} onComplete={onComplete} />
         </div>
       )}
     </>

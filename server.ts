@@ -8,6 +8,7 @@ import { db, initDb } from './src/db/database.ts';
 import authRoutes from './src/routes/auth.ts';
 import testRoutes from './src/routes/test.ts';
 import adminRoutes from './src/routes/admin.ts';
+import surveyRoutes from './src/routes/survey.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,6 +34,7 @@ async function startServer() {
   app.use('/api/auth', authRoutes);
   app.use('/api/test', testRoutes);
   app.use('/api/admin', adminRoutes);
+  app.use('/api/survey', surveyRoutes);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== 'production') {

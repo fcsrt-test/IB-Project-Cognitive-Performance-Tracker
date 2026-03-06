@@ -51,6 +51,32 @@ export function initDb() {
       )
     `);
 
+    // Surveys
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS surveys (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        result_id INTEGER,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        age_group TEXT,
+        previous_test TEXT,
+        q_instructions INTEGER,
+        q_tasks INTEGER,
+        q_comfort INTEGER,
+        q_length INTEGER,
+        q_language INTEGER,
+        q_visuals INTEGER,
+        q_comparison INTEGER,
+        q_recommend INTEGER,
+        test_duration TEXT,
+        liked_most TEXT,
+        liked_least TEXT,
+        suggestions TEXT,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (result_id) REFERENCES results(id)
+      )
+    `);
+
     console.log('Tables created/verified.');
 
     // Seed data if empty or incorrect count

@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'motion/react';
-import { Lock, Download, X } from 'lucide-react';
+import { Lock, Download, X, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { json2csv } from 'json-2-csv';
 
@@ -53,33 +53,19 @@ export default function Login() {
     e.preventDefault();
     setMaintenanceError('');
 
-    // Hardcoded check for demo purposes, in production use a real auth endpoint
     if (maintenancePass === 'admin123') {
-      try {
-        // Fetch all history for export
-        const res = await fetch('/api/test/history'); // Note: This endpoint currently returns user history. 
-        // For a real admin portal, we'd need an admin endpoint. 
-        // Assuming for this demo we just want to show the download capability.
-        // If the user isn't logged in, /api/test/history might fail or return empty.
-        // Let's assume we need to be logged in or use a special admin endpoint.
-        // Since we don't have a backend admin endpoint ready, we'll mock the download 
-        // or try to fetch if the session allows (which it won't if we are on login screen).
-        
-        // For the purpose of this request "teach me how to download", 
-        // I will simulate the download action or use the existing export link if valid.
-        
-        // Actually, the previous link was: /api/admin/export?secret=researcher-access-key
-        // Let's use that directly.
-        
-        window.location.href = '/api/admin/export?secret=researcher-access-key';
-        setShowMaintenance(false);
-        setMaintenancePass('');
-      } catch (err) {
-        setMaintenanceError('Download failed');
-      }
+      setMaintenanceSuccess(true);
     } else {
       setMaintenanceError('Invalid Access Code');
     }
+  };
+
+  const [maintenanceSuccess, setMaintenanceSuccess] = useState(false);
+
+  const downloadData = (type: 'results' | 'surveys') => {
+    const secret = 'researcher-access-key';
+    const endpoint = type === 'results' ? '/api/admin/export' : '/api/admin/export-surveys';
+    window.location.href = `${endpoint}?secret=${secret}`;
   };
 
   return (
@@ -167,38 +153,58 @@ export default function Login() {
             >
               <div className="flex justify-between items-center mb-4">
                 <h3 className="font-serif text-lg text-stone-900">Maintenance Access</h3>
-                <button onClick={() => setShowMaintenance(false)} className="text-stone-400 hover:text-stone-600">
+                <button onClick={() => { setShowMaintenance(false); setMaintenanceSuccess(false); setMaintenancePass(''); }} className="text-stone-400 hover:text-stone-600">
                   <X className="w-5 h-5" />
                 </button>
               </div>
               
-              <form onSubmit={handleMaintenanceLogin} className="space-y-4">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Access Code</label>
-                  <input
-                    type="password"
-                    value={maintenancePass}
-                    onChange={(e) => setMaintenancePass(e.target.value)}
-                    className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-400 transition-all"
-                    placeholder="Enter code..."
-                    autoFocus
-                  />
-                </div>
-                
-                {maintenanceError && (
-                  <div className="text-red-500 text-xs bg-red-50 p-2 rounded-lg">
-                    {maintenanceError}
+              {!maintenanceSuccess ? (
+                <form onSubmit={handleMaintenanceLogin} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-stone-500 uppercase tracking-wider mb-2">Access Code</label>
+                    <input
+                      type="password"
+                      value={maintenancePass}
+                      onChange={(e) => setMaintenancePass(e.target.value)}
+                      className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-stone-900/10 focus:border-stone-400 transition-all"
+                      placeholder="Enter code..."
+                      autoFocus
+                    />
                   </div>
-                )}
-                
-                <button
-                  type="submit"
-                  className="w-full bg-stone-900 text-white py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Download className="w-4 h-4" />
-                  <span>Download System Logs</span>
-                </button>
-              </form>
+                  
+                  {maintenanceError && (
+                    <div className="text-red-500 text-xs bg-red-50 p-2 rounded-lg">
+                      {maintenanceError}
+                    </div>
+                  )}
+                  
+                  <button
+                    type="submit"
+                    className="w-full bg-stone-900 text-white py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Lock className="w-4 h-4" />
+                    <span>Verify Access</span>
+                  </button>
+                </form>
+              ) : (
+                <div className="space-y-3">
+                  <p className="text-stone-500 text-sm mb-4">Select the data you wish to export as CSV.</p>
+                  <button
+                    onClick={() => downloadData('results')}
+                    className="w-full bg-stone-900 text-white py-3 rounded-xl font-medium hover:bg-stone-800 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Download Test Results</span>
+                  </button>
+                  <button
+                    onClick={() => downloadData('surveys')}
+                    className="w-full bg-stone-100 text-stone-900 py-3 rounded-xl font-medium hover:bg-stone-200 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Download Survey Data</span>
+                  </button>
+                </div>
+              )}
             </motion.div>
           </div>
         )}

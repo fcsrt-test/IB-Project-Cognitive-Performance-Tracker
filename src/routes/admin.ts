@@ -47,4 +47,29 @@ router.get('/export', (req, res) => {
   }
 });
 
+router.get('/export-surveys', (req, res) => {
+  const secret = req.query.secret;
+  
+  if (secret !== ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized access' });
+  }
+
+  try {
+    const surveys = db.prepare(`
+      SELECT * FROM surveys ORDER BY created_at DESC
+    `).all();
+
+    const parser = new Parser();
+    const csv = parser.parse(surveys);
+
+    res.header('Content-Type', 'text/csv');
+    res.attachment('survey_data_anonymized.csv');
+    res.send(csv);
+
+  } catch (error) {
+    console.error('Survey export error:', error);
+    res.status(500).json({ error: 'Failed to export survey data' });
+  }
+});
+
 export default router;
