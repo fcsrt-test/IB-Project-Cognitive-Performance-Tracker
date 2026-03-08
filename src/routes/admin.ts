@@ -7,6 +7,14 @@ const router = express.Router();
 // Simple admin protection (in a real app, use proper auth/roles)
 const ADMIN_SECRET = process.env.ADMIN_SECRET || 'researcher-access-key';
 
+router.get('/verify', (req, res) => {
+  const secret = req.query.secret;
+  if (secret !== ADMIN_SECRET) {
+    return res.status(401).json({ error: 'Unauthorized access' });
+  }
+  res.json({ success: true });
+});
+
 router.get('/export', (req, res) => {
   const secret = req.query.secret;
   

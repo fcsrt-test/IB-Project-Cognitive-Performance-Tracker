@@ -482,10 +482,16 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
         <div className="w-16 h-16 bg-stone-100 flex items-center justify-center mx-auto mb-6 rounded-2xl">
           <Brain className="w-8 h-8 text-stone-600" />
         </div>
-        <h2 className="text-3xl font-serif font-medium text-stone-900 mb-4 tracking-tight">Memory Assessment (RI-48)</h2>
-        <p className="text-stone-500 mb-8 leading-relaxed text-sm max-w-lg mx-auto">
-          This assessment consists of 12 sets of 4 items. You will be asked to identify items by category, verify them, and later recall them after a brief distraction task.
-        </p>
+        <h2 className="text-3xl font-serif font-medium text-stone-900 mb-4 tracking-tight">Memory Assessment</h2>
+        <div className="text-stone-600 mb-8 leading-relaxed text-base max-w-lg mx-auto space-y-4 text-left bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+          <p>Welcome to the Memory Assessment. This test will help evaluate your memory in three simple steps:</p>
+          <ul className="list-disc pl-5 space-y-2">
+            <li><strong>Step 1: Learn.</strong> You will see groups of 4 words. We will ask you to identify which word belongs to a specific category.</li>
+            <li><strong>Step 2: Distraction.</strong> You will play a quick, 20-second clicking game to clear your mind.</li>
+            <li><strong>Step 3: Remember.</strong> You will be asked to type in as many words as you can remember from Step 1. First on your own, and then with category hints.</li>
+          </ul>
+          <p className="pt-2 font-medium text-stone-900 text-center">Take your time and do your best!</p>
+        </div>
         <button
           onClick={() => {
             if (screens.length > 0) {
@@ -503,23 +509,8 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
     );
   }
 
-  // Temporary Navigator for testing
-  const DevNavigator = () => (
-    <div className="fixed bottom-4 right-4 bg-white border border-stone-200 p-3 shadow-xl z-50 flex flex-col gap-2 opacity-30 hover:opacity-100 transition-opacity rounded-xl">
-      <div className="text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-1">Debug Menu</div>
-      <button onClick={() => setPhase('intro')} className="text-[10px] text-left hover:text-stone-900">Intro</button>
-      <button onClick={() => setPhase('encoding')} className="text-[10px] text-left hover:text-stone-900">Encoding</button>
-      <button onClick={() => setPhase('distractor')} className="text-[10px] text-left hover:text-stone-900">Distractor</button>
-      <button onClick={() => setPhase('free-recall')} className="text-[10px] text-left hover:text-stone-900">Free Recall</button>
-      <button onClick={() => setPhase('recall')} className="text-[10px] text-left hover:text-stone-900">Cued Recall</button>
-      <button onClick={() => setPhase('results')} className="text-[10px] text-left hover:text-stone-900">Results</button>
-    </div>
-  );
-
   return (
     <>
-      <DevNavigator />
-      
       {/* Jumpscare Overlay */}
       <AnimatePresence>
         {showJumpscare && (

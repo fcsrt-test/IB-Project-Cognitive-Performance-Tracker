@@ -53,19 +53,23 @@ export default function Login() {
     e.preventDefault();
     setMaintenanceError('');
 
-    if (maintenancePass === 'admin123') {
-      setMaintenanceSuccess(true);
-    } else {
-      setMaintenanceError('Invalid Access Code');
+    try {
+      const res = await fetch(`/api/admin/verify?secret=${encodeURIComponent(maintenancePass)}`);
+      if (res.ok) {
+        setMaintenanceSuccess(true);
+      } else {
+        setMaintenanceError('Invalid Access Code');
+      }
+    } catch (err) {
+      setMaintenanceError('Connection error. Please try again.');
     }
   };
 
   const [maintenanceSuccess, setMaintenanceSuccess] = useState(false);
 
   const downloadData = (type: 'results' | 'surveys') => {
-    const secret = 'researcher-access-key';
     const endpoint = type === 'results' ? '/api/admin/export' : '/api/admin/export-surveys';
-    window.location.href = `${endpoint}?secret=${secret}`;
+    window.location.href = `${endpoint}?secret=${encodeURIComponent(maintenancePass)}`;
   };
 
   return (

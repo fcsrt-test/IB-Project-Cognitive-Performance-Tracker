@@ -101,8 +101,7 @@ router.get('/start', (req: any, res) => {
 
     // Shuffle the screens order? 
     // The prompt says "Display 12 consecutive screens". 
-    // Usually RI-48 has a specific order, but randomizing the screens (while keeping the internal logic) is good.
-    // Actually, let's keep the block structure (1st exemplars, then 2nd...) or just shuffle all screens?
+    // Randomizing the screens (while keeping the internal logic) is good.
     // Let's shuffle all screens to ensure unpredictability.
     const shuffledScreens = screens.sort(() => Math.random() - 0.5);
 
