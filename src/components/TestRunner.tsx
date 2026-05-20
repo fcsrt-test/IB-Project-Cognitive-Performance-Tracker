@@ -896,11 +896,44 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
               
               <button
                 type="button"
-                onClick={() => {
-                  setScore(39);
-                  setFreeRecallScore(22);
-                  setIntrusionCount(2);
-                  setLatency(14200);
+                onClick={async () => {
+                  const s = 39;
+                  const frs = 22;
+                  const intrs = 2;
+                  const lat = 14200;
+                  
+                  setScore(s);
+                  setFreeRecallScore(frs);
+                  setIntrusionCount(intrs);
+                  setLatency(lat);
+                  
+                  try {
+                    const mockDetails = [
+                      { term: "Apple", category: "Fruit", isCorrect: true, userAnswer: "apple" },
+                      { term: "Banana", category: "Fruit", isCorrect: true, userAnswer: "banana" },
+                      { term: "Cherry", category: "Fruit", isCorrect: true, userAnswer: "cherry" },
+                      { term: "Grape", category: "Fruit", isCorrect: true, userAnswer: "grape" },
+                      { term: "Ladybird", category: "Insect", isCorrect: true, userAnswer: "ladybird" }
+                    ];
+                    const res = await fetch('/api/test/submit', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        setId: setId || 1,
+                        score: s,
+                        totalItems: 48,
+                        details: mockDetails,
+                        latency: lat,
+                        intrusionCount: intrs,
+                        freeRecallScore: frs
+                      })
+                    });
+                    const data = await res.json();
+                    if (data.id) setResultId(data.id);
+                  } catch (e) {
+                    console.error('Failed to submit demo result:', e);
+                  }
+                  
                   setPhase('results');
                 }}
                 className={`w-full text-left text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all ${
