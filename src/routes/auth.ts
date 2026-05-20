@@ -33,7 +33,7 @@ router.post('/register', (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 
     });
     
-    res.json({ user: { id: Number(result.lastInsertRowid), username } });
+    res.json({ user: { id: Number(result.lastInsertRowid), username }, token });
   } catch (error) {
     if (error instanceof z.ZodError) {
       const errorMessage = error.issues.map((e: any) => e.message).join(', ');
@@ -63,7 +63,7 @@ router.post('/login', (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000 
     });
     
-    res.json({ user: { id: Number(user.id), username: user.username } });
+    res.json({ user: { id: Number(user.id), username: user.username }, token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
@@ -76,7 +76,10 @@ router.post('/logout', (req, res) => {
 });
 
 router.get('/me', (req, res) => {
-  const token = req.cookies.token;
+  let token = req.cookies.token;
+  if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
+    token = req.headers.authorization.substring(7);
+  }
   if (!token) return res.status(401).json({ error: 'Not authenticated' });
 
   try {

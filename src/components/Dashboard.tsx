@@ -14,7 +14,13 @@ export default function Dashboard() {
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   const fetchHistory = () => {
-    fetch('/api/test/history')
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    fetch('/api/test/history', { headers })
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch history');
         return res.json();

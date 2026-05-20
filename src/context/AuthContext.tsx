@@ -7,7 +7,7 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (user: User) => void;
+  login: (user: User, token?: string) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -20,20 +20,40 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Check for existing session
-    fetch('/api/auth/me')
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    fetch('/api/auth/me', { headers })
       .then(res => {
         if (res.ok) return res.json();
         throw new Error('Not authenticated');
       })
       .then(data => setUser(data.user))
-      .catch(() => setUser(null))
+      .catch(() => {
+        setUser(null);
+        localStorage.removeItem('token');
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
-  const login = (userData: User) => setUser(userData);
+  const login = (userData: User, token?: string) => {
+    if (token) {
+      localStorage.setItem('token', token);
+    }
+    setUser(userData);
+  };
   
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    await fetch('/api/auth/logout', { method: 'POST', headers });
+    localStorage.removeItem('token');
     setUser(null);
   };
 

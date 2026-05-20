@@ -43,7 +43,7 @@ export default function Login() {
         throw new Error(data.error || 'Authentication failed');
       }
       
-      login(data.user);
+      login(data.user, data.token);
     } catch (err: any) {
       setError(err.message);
     }
@@ -71,7 +71,7 @@ export default function Login() {
         throw new Error(data.error || 'Quick Login failed');
       }
       
-      login(data.user);
+      login(data.user, data.token);
     } catch (err: any) {
       setError(err.message);
     }

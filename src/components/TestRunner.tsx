@@ -252,7 +252,13 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
   };
 
   useEffect(() => {
-    fetch('/api/test/start')
+    const token = localStorage.getItem('token');
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    fetch('/api/test/start', { headers })
       .then(res => {
         if (!res.ok) throw new Error('Failed to start test');
         return res.json();
@@ -447,9 +453,17 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
     setIsSubmitting(true);
 
     try {
+      const token = localStorage.getItem('token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
       const res = await fetch('/api/test/submit', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           setId,
           score: correctCount,
@@ -908,6 +922,14 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
                   setLatency(lat);
                   
                   try {
+                    const token = localStorage.getItem('token');
+                    const headers: Record<string, string> = {
+                      'Content-Type': 'application/json'
+                    };
+                    if (token) {
+                      headers['Authorization'] = `Bearer ${token}`;
+                    }
+
                     const mockDetails = [
                       { term: "Apple", category: "Fruit", isCorrect: true, userAnswer: "apple" },
                       { term: "Banana", category: "Fruit", isCorrect: true, userAnswer: "banana" },
@@ -917,7 +939,7 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
                     ];
                     const res = await fetch('/api/test/submit', {
                       method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
+                      headers,
                       body: JSON.stringify({
                         setId: setId || 1,
                         score: s,
