@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Brain, Target, Clock, AlertCircle, CheckCircle2, XCircle, Sparkles, MessageSquare } from 'lucide-react';
-import Survey from './Survey';
+import { useAuth } from '../context/AuthContext';
 
 interface Term {
   category: string;
@@ -126,7 +126,11 @@ const playSound = (type: 'correct' | 'incorrect' | 'celebration' | 'jumpscare') 
 };
 
 export default function TestRunner({ onComplete }: TestRunnerProps) {
-  const [phase, setPhase] = useState<'intro' | 'encoding' | 'distractor' | 'free-recall' | 'recall' | 'results' | 'survey'>('intro');
+  const { user } = useAuth();
+  const isDemoUser = user?.username === 'ib_exhibition_demo';
+  const [isMenuOpen, setIsMenuOpen] = useState(true);
+
+  const [phase, setPhase] = useState<'intro' | 'encoding' | 'distractor' | 'free-recall' | 'recall' | 'results'>('intro');
   const [screens, setScreens] = useState<Term[][]>([]);
   const [setId, setSetId] = useState<number | null>(null);
   const [resultId, setResultId] = useState<number | null>(null);
@@ -467,30 +471,30 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
   };
 
   const getInterpretation = (free: number, total: number) => {
-    if (total <= 16) return { status: 'Impaired Total Recall (Amnestic MCI)', color: 'text-red-700', bg: 'bg-red-100' };
-    if (total <= 43) return { status: 'Borderline Total Recall (Preclinical Risk)', color: 'text-yellow-700', bg: 'bg-yellow-100' };
-    if (free <= 24) return { status: 'Impaired Free Recall (Retrieval Deficit)', color: 'text-orange-700', bg: 'bg-orange-100' };
-    return { status: 'Normal Memory Function', color: 'text-emerald-700', bg: 'bg-emerald-100' };
+    if (total <= 16) return { status: 'Declined Retrieval Performance (Potential Amnestic MCI Profile)', color: 'text-red-700', bg: 'bg-red-100' };
+    if (total <= 43) return { status: 'Borderline Retrieval Performance (Possible Preclinical Memory Risk)', color: 'text-yellow-700', bg: 'bg-yellow-105' };
+    if (free <= 24) return { status: 'Reduced Acquisition/Retrieval Efficiency (Retrieval Pathway Deficit)', color: 'text-orange-700', bg: 'bg-orange-100' };
+    return { status: 'Preserved Cognitive Memory Function', color: 'text-emerald-700', bg: 'bg-emerald-100' };
   };
 
-  if (isLoading) return <div className="py-12 text-center">Loading assessment...</div>;
-  if (error) return <div className="py-12 text-center text-red-600">{error}</div>;
+  if (isLoading) return <div className="py-12 text-center text-stone-500 font-medium">Initializing Clinical Assessment Environment...</div>;
+  if (error) return <div className="py-12 text-center text-red-600 font-medium">{error}</div>;
 
   if (phase === 'intro') {
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
         <div className="w-16 h-16 bg-stone-100 flex items-center justify-center mx-auto mb-6 rounded-2xl">
-          <Brain className="w-8 h-8 text-stone-600" />
+          <Brain className="w-8 h-8 text-stone-700" />
         </div>
-        <h2 className="text-3xl font-serif font-medium text-stone-900 mb-4 tracking-tight">Memory Assessment</h2>
+        <h2 className="text-3xl font-serif font-medium text-stone-900 mb-4 tracking-tight">Clinical Memory Assessment</h2>
         <div className="text-stone-600 mb-8 leading-relaxed text-base max-w-lg mx-auto space-y-4 text-left bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-          <p>Welcome to the Memory Assessment. This test will help evaluate your memory in three simple steps:</p>
-          <ul className="list-disc pl-5 space-y-2">
-            <li><strong>Step 1: Learn.</strong> You will see groups of 4 words. We will ask you to identify which word belongs to a specific category.</li>
-            <li><strong>Step 2: Distraction.</strong> You will play a quick, 20-second clicking game to clear your mind.</li>
-            <li><strong>Step 3: Remember.</strong> You will be asked to type in as many words as you can remember from Step 1. First on your own, and then with category hints.</li>
+          <p>Welcome to the Memory Assessment. This controlled testing interface evaluates target memory retention across three key performance stages:</p>
+          <ul className="list-disc pl-5 space-y-2.5 text-sm">
+            <li><strong>Stage 1: Controlled Encoding.</strong> You will be presented with successive groups of 4 target items and requested to identify specific terms using semantic category cues to ensure deep cognitive registration.</li>
+            <li><strong>Stage 2: Interference Task.</strong> You will participate in a brief, 20-second active distraction task designed to prevent immediate verbal rehearsal and clear short-term sensory storage.</li>
+            <li><strong>Stage 3: Recall Trials.</strong> You will perform an independent Free Recall trial, followed by a Cued Recall trial incorporating semantic category prompts to measure retrieval pathway efficiency.</li>
           </ul>
-          <p className="pt-2 font-medium text-stone-900 text-center">Take your time and do your best!</p>
+          <p className="pt-2 font-medium text-stone-900 text-center text-sm">Please carry out this assessment in a quiet, distraction-free environment.</p>
         </div>
         <button
           onClick={() => {
@@ -503,7 +507,7 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
           disabled={isLoading || !!error}
           className="bg-stone-900 text-white px-10 py-4 rounded-xl hover:bg-stone-800 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-all shadow-sm"
         >
-          {isLoading ? 'Loading...' : 'Start Assessment'}
+          {isLoading ? 'Loading Parameters...' : 'Begin Cognitive Assessment'}
         </button>
       </div>
     );
@@ -641,12 +645,12 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
       {phase === 'distractor' && (
         <div className="max-w-4xl mx-auto py-12 text-center relative h-[600px] bg-stone-50 border border-stone-200 rounded-3xl shadow-inner overflow-hidden select-none">
           <div className="absolute top-8 left-0 right-0 z-10">
-            <h3 className="text-2xl font-serif text-stone-900 mb-2">Focus Task</h3>
-            <p className="text-stone-500 mb-4 text-sm">Please click the targets as they appear.</p>
+            <h3 className="text-2xl font-serif text-stone-900 mb-2">Visuospatial Distraction Task</h3>
+            <p className="text-stone-500 mb-4 text-sm">Select the targets on screen as they appear to suppress active semantic rehearsal.</p>
             <div className="text-5xl font-serif font-bold text-stone-900">
               {distractorTimeLeft}s
             </div>
-            <div className="text-sm text-stone-400 mt-2 font-medium">Score: {distractorScore}</div>
+            <div className="text-sm text-stone-400 mt-2 font-medium">Interference Register: {distractorScore} target clicks</div>
           </div>
           
           <motion.button
@@ -663,9 +667,9 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
 
       {phase === 'free-recall' && (
         <div className="max-w-4xl mx-auto py-12">
-          <h3 className="text-3xl font-serif text-stone-900 mb-4 text-center">Free Recall</h3>
+          <h3 className="text-3xl font-serif text-stone-900 mb-4 text-center">Free Recall Phase</h3>
           <p className="text-stone-500 mb-8 text-center text-sm">
-            Please enter as many items as you can remember in any order.
+            List any target items you remember from the encoding stage in any order. Clinical precision spelling is preferred but mild deviations are accommodated.
           </p>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mb-12">
@@ -703,10 +707,10 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
       {phase === 'recall' && (
         <div className="max-w-4xl mx-auto py-12">
           <div className="flex justify-between items-center mb-8">
-            <h3 className="text-3xl font-serif text-stone-900">Cued Recall</h3>
+            <h3 className="text-3xl font-serif text-stone-900">Cued Recall Stage</h3>
             <div className="flex items-center gap-2 text-stone-500">
               <Clock className="w-4 h-4" />
-              <span className="text-sm">Untimed</span>
+              <span className="text-sm">Standard Clinical Trial (Untimed)</span>
             </div>
           </div>
           
@@ -720,7 +724,7 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
                       key={i}
                       type="text"
                       autoComplete="off"
-                      placeholder={`Item ${i + 1}`}
+                      placeholder={`Recall term ${i + 1}`}
                       className="w-full p-3 bg-stone-50 border border-stone-200 rounded-xl focus:ring-2 focus:ring-stone-900/10 focus:border-stone-400 focus:outline-none text-sm"
                       value={recallAnswers[cat][i]}
                       onChange={e => {
@@ -741,7 +745,7 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
               disabled={isSubmitting}
               className="bg-stone-900 text-white px-12 py-4 rounded-xl font-medium hover:bg-stone-800 disabled:opacity-50 transition-all shadow-md"
             >
-              {isSubmitting ? 'Processing...' : 'Submit Assessment'}
+              {isSubmitting ? 'Logging Trial Data...' : 'Submit Cognitive Dataset'}
             </button>
           </div>
         </div>
@@ -755,52 +759,159 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
             <span className="text-4xl font-serif font-bold">{score}</span>
           </div>
           
-          <h3 className="text-3xl font-serif text-stone-900 mb-2">Assessment Complete</h3>
+          <h3 className="text-3xl font-serif text-stone-900 mb-2">Cognitive Evaluation Completed</h3>
           <p className="text-lg font-medium mb-8 text-stone-600">
             {getInterpretation(freeRecallScore, score).status}
           </p>
 
           <div className="grid grid-cols-2 gap-4 mb-8 text-left">
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-1">Free Recall</div>
+              <div className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-1">Free Recall Rate</div>
               <div className="text-2xl font-serif text-stone-900">{freeRecallScore} / 48</div>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-1">Total Recall</div>
+              <div className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-1">Total Recall Rate</div>
               <div className="text-2xl font-serif text-stone-900">{score} / 48</div>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-1">Intrusions</div>
+              <div className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-1">Intrusions Recorded</div>
               <div className="text-2xl font-serif text-stone-900">{intrusionCount}</div>
             </div>
             <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
-              <div className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-1">Latency</div>
+              <div className="text-stone-400 text-xs font-bold uppercase tracking-widest mb-1">Mean Retrieval Latency</div>
               <div className="text-2xl font-serif text-stone-900">{(latency / 1000).toFixed(1)}s</div>
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => setPhase('survey')}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 text-white px-8 py-4 rounded-xl hover:bg-stone-800 transition-all font-medium shadow-md"
-            >
-              <MessageSquare className="w-4 h-4" />
-              <span>Provide Feedback</span>
-            </button>
+          <div className="flex items-center justify-center">
             <button
               onClick={onComplete}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-stone-600 border border-stone-200 px-8 py-4 rounded-xl hover:bg-stone-50 transition-all font-medium"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-stone-900 hover:bg-stone-800 text-white px-10 py-4 rounded-xl transition-all font-medium shadow-md"
             >
-              <span>Return to Dashboard</span>
+              <span>Return to Assessment Dashboard</span>
             </button>
           </div>
         </div>
       )}
 
-      {phase === 'survey' && (
-        <div className="py-12">
-          <Survey resultId={resultId || undefined} onComplete={onComplete} />
-        </div>
+      {/* Exhibition Demo Skip Jumper Menu */}
+      {isDemoUser && (
+        <motion.div
+          drag
+          dragMomentum={false}
+          className="fixed bottom-6 right-6 z-[9999] bg-white border-2 border-stone-900 shadow-2xl rounded-2xl p-4 w-64 select-none font-sans"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+        >
+          <div className="flex justify-between items-center border-b border-stone-100 pb-2 mb-3 cursor-move">
+            <div className="flex items-center gap-1.5 font-bold text-stone-900 text-xs uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-emerald-600 animate-pulse" />
+              <span>Exhibition Jumper</span>
+            </div>
+            <button 
+              type="button"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-stone-400 hover:text-stone-900 text-xs font-semibold px-2 py-0.5 border border-stone-200 rounded-md hover:bg-stone-50 transition-colors"
+            >
+              {isMenuOpen ? 'Collapse' : 'Expand'}
+            </button>
+          </div>
+
+          {isMenuOpen && (
+            <div className="space-y-1">
+              <p className="text-[10px] text-stone-400 font-medium mb-1.5 uppercase tracking-wide font-sans">For Exhibition Demonstration:</p>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('intro');
+                }}
+                className={`w-full text-left text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all ${
+                  phase === 'intro' ? 'bg-stone-900 text-white' : 'hover:bg-stone-50 text-stone-700'
+                }`}
+              >
+                1. Assessment Intro
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('encoding');
+                  setEncodingStep('identify');
+                  setCurrentScreenIndex(0);
+                  setCurrentPromptIndex(0);
+                }}
+                className={`w-full text-left text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all ${
+                  phase === 'encoding' ? 'bg-stone-900 text-white' : 'hover:bg-stone-50 text-stone-700'
+                }`}
+              >
+                2. Association Step
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('distractor');
+                  setDistractorTimeLeft(20);
+                }}
+                className={`w-full text-left text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all ${
+                  phase === 'distractor' ? 'bg-stone-900 text-white' : 'hover:bg-stone-50 text-stone-700'
+                }`}
+              >
+                3. Visuospatial Task
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('free-recall');
+                  // Seed words if empty
+                  if (freeRecallList.every(x => x === '')) {
+                    const demoWords = [...freeRecallList];
+                    demoWords[0] = 'Apple';
+                    demoWords[1] = 'Ladybird';
+                    demoWords[2] = 'Table';
+                    setFreeRecallList(demoWords);
+                  }
+                }}
+                className={`w-full text-left text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all ${
+                  phase === 'free-recall' ? 'bg-stone-900 text-white' : 'hover:bg-stone-50 text-stone-700'
+                }`}
+              >
+                4. Free Recall Stage
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setPhase('recall');
+                  setRecallStartTime(Date.now());
+                }}
+                className={`w-full text-left text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all ${
+                  phase === 'recall' ? 'bg-stone-900 text-white' : 'hover:bg-stone-50 text-stone-700'
+                }`}
+              >
+                5. Cued Recall Stage
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => {
+                  setScore(39);
+                  setFreeRecallScore(22);
+                  setIntrusionCount(2);
+                  setLatency(14200);
+                  setPhase('results');
+                }}
+                className={`w-full text-left text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all ${
+                  phase === 'results' ? 'bg-stone-900 text-white' : 'hover:bg-stone-50 text-stone-700'
+                }`}
+              >
+                6. Results Summary
+              </button>
+            </div>
+          )}
+        </motion.div>
       )}
     </>
   );

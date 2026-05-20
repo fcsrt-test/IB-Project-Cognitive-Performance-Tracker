@@ -87,9 +87,161 @@ export function initDb() {
       console.log('Term count < 144, triggering seedData...');
       seedData();
     }
+
+    // Seed Demo User
+    seedDemoUser();
+    // Seed Exhibition Demo User
+    seedExhibitionDemo();
   } catch (error) {
     console.error('Error in initDb:', error);
   }
+}
+
+export function seedExhibitionDemo() {
+  const username = 'ib_exhibition_demo';
+  const existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username) as { id: number } | undefined;
+  
+  if (existingUser) return;
+
+  console.log('Seeding IB Exhibition Demo (ib_exhibition_demo)...');
+  const passwordHash = bcrypt.hashSync('ib_exhibition_demo', 10);
+  const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, passwordHash);
+  const userId = result.lastInsertRowid;
+
+  const sets = db.prepare('SELECT id FROM test_sets').all() as { id: number }[];
+  if (sets.length === 0) return;
+
+  const insertResult = db.prepare(`
+    INSERT INTO results (user_id, test_date, score, total_items, set_id, details)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  const now = new Date();
+
+  // Populate 5 fake test results over a month (approx. every 7 days)
+  for (let i = 0; i < 5; i++) {
+    const daysAgo = 28 - (i * 7); // 28, 21, 14, 7, 0 days ago
+    const testDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
+    const isoDate = testDate.toISOString().replace('T', ' ').split('.')[0];
+
+    // Give some realistic cognitive performance
+    // Score ~38-44/48
+    const score = 38 + (i % 3) * 2 + Math.floor(Math.random() * 2);
+    const setId = sets[i % sets.length].id;
+
+    // Fetch terms for this set to make details realistic
+    const terms = db.prepare('SELECT category, term FROM terms WHERE set_id = ?').all(setId) as {category: string, term: string}[];
+
+    const currentFree = Math.floor(score * 0.6); // ~24
+    const currentCued = score - currentFree; // ~16
+
+    const itemDetails = terms.map((t, idx) => {
+      let phase: 'free' | 'cued' | null = null;
+      let correct = false;
+
+      if (idx < currentFree) {
+        correct = true;
+        phase = 'free';
+      } else if (idx < currentFree + currentCued) {
+        correct = true;
+        phase = 'cued';
+      }
+
+      return {
+        term: t.term,
+        category: t.category,
+        phase,
+        correct
+      };
+    });
+
+    const details = JSON.stringify({
+      itemDetails,
+      latency: 500 + Math.random() * 300,
+      intrusionCount: Math.round(Math.random() * 2)
+    });
+
+    insertResult.run(userId, isoDate, score, 48, setId, details);
+  }
+  console.log('Exhibition user created: ib_exhibition_demo / ib_exhibition_demo');
+}
+
+export function seedDemoUser() {
+  const username = 'p_thompson';
+  const existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username) as { id: number } | undefined;
+  
+  if (existingUser) return;
+
+  console.log('Seeding Patient Demo (Patrick Thompson)...');
+  const passwordHash = bcrypt.hashSync('memory2026', 10);
+  const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, passwordHash);
+  const userId = result.lastInsertRowid;
+
+  const sets = db.prepare('SELECT id FROM test_sets').all() as { id: number }[];
+  if (sets.length === 0) return;
+
+  const insertResult = db.prepare(`
+    INSERT INTO results (user_id, test_date, score, total_items, set_id, details)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `);
+
+  const now = new Date();
+
+  for (let i = 0; i < 12; i++) {
+    const daysAgo = 40 - (i * 3.5); // Spread over ~40 days
+    const testDate = new Date(now.getTime() - (daysAgo * 24 * 60 * 60 * 1000));
+    const isoDate = testDate.toISOString().replace('T', ' ').split('.')[0];
+    
+    // Declining scores
+    // Start: ~42/48 (high free recall)
+    // End: ~26/48 (low free recall, high dependency on cues)
+    const factor = i / 11; // 0 to 1
+    
+    const maxPossible = 48;
+    const initialFree = 28;
+    const initialCued = 14;
+    
+    const finalFree = 8;
+    const finalCued = 18;
+    
+    const currentFree = Math.round(initialFree - (initialFree - finalFree) * factor + (Math.random() * 4 - 2));
+    const currentCued = Math.round(initialCued + (finalCued - initialCued) * factor + (Math.random() * 4 - 2));
+    
+    const score = Math.min(currentFree + currentCued, maxPossible);
+    const setId = sets[i % sets.length].id;
+    
+    // Fetch terms for this set to make details realistic
+    const terms = db.prepare('SELECT category, term FROM terms WHERE set_id = ?').all(setId) as {category: string, term: string}[];
+    
+    const itemDetails = terms.map((t, idx) => {
+      let phase: 'free' | 'cued' | null = null;
+      let correct = false;
+      
+      if (idx < currentFree) {
+        correct = true;
+        phase = 'free';
+      } else if (idx < currentFree + currentCued) {
+        correct = true;
+        phase = 'cued';
+      }
+      
+      return {
+        term: t.term,
+        category: t.category,
+        phase,
+        correct
+      };
+    });
+
+    const details = JSON.stringify({
+      itemDetails,
+      latency: 450 + (factor * 800) + Math.random() * 200, // Latency increases as cognition declines
+      intrusionCount: Math.floor(factor * 5) + Math.round(Math.random() * 2)
+    });
+
+    insertResult.run(userId, isoDate, score, 48, setId, details);
+  }
+  console.log('Demo user created: p_thompson / memory2026');
 }
 
 export function seedData() {
