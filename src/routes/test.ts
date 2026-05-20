@@ -7,7 +7,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-do-not-use-in-prod-with
 
 // Middleware to check auth
 const requireAuth = (req: any, res: any, next: any) => {
-  let token = req.cookies.token;
+  let token = req.cookies?.token;
   if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
     token = req.headers.authorization.substring(7);
   }

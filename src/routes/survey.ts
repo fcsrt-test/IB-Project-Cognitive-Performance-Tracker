@@ -25,7 +25,7 @@ const surveySchema = z.object({
 });
 
 router.post('/submit', (req, res) => {
-  let token = req.cookies.token;
+  let token = req.cookies?.token;
   if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
     token = req.headers.authorization.substring(7);
   }

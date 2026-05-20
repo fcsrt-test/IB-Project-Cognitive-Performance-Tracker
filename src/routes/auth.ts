@@ -64,9 +64,9 @@ router.post('/login', (req, res) => {
     });
     
     res.json({ user: { id: Number(user.id), username: user.username }, token });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
+  } catch (error: any) {
+    console.error('Login error detail:', error);
+    res.status(500).json({ error: 'Internal server error: ' + (error?.message || error) });
   }
 });
 
@@ -76,7 +76,7 @@ router.post('/logout', (req, res) => {
 });
 
 router.get('/me', (req, res) => {
-  let token = req.cookies.token;
+  let token = req.cookies?.token;
   if (!token && req.headers.authorization && req.headers.authorization.startsWith('Bearer ')) {
     token = req.headers.authorization.substring(7);
   }
