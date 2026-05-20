@@ -16,7 +16,7 @@ try {
   console.log('Sets:', sets);
 
   if (sets.length > 0) {
-    const terms = db.prepare('SELECT * FROM terms WHERE set_id = ? LIMIT 5').all(sets[0].id);
+    const terms = db.prepare('SELECT * FROM terms WHERE set_id = ? LIMIT 5').all((sets[0] as { id: number }).id);
     console.log('Sample terms from first set:', terms);
   }
 

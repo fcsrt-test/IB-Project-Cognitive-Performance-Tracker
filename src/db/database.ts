@@ -99,14 +99,21 @@ export function initDb() {
 
 export function seedExhibitionDemo() {
   const username = 'ib_exhibition_demo';
-  const existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username) as { id: number } | undefined;
+  let existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username) as { id: number } | undefined;
   
-  if (existingUser) return;
+  let userId: number | bigint;
+  if (!existingUser) {
+    console.log('Seeding IB Exhibition Demo User (ib_exhibition_demo)...');
+    const passwordHash = bcrypt.hashSync('ib_exhibition_demo', 10);
+    const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, passwordHash);
+    userId = result.lastInsertRowid;
+  } else {
+    userId = existingUser.id;
+  }
 
-  console.log('Seeding IB Exhibition Demo (ib_exhibition_demo)...');
-  const passwordHash = bcrypt.hashSync('ib_exhibition_demo', 10);
-  const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, passwordHash);
-  const userId = result.lastInsertRowid;
+  // Always clean and re-seed demo accounts to ensure consistent data structure
+  db.prepare('DELETE FROM results WHERE user_id = ?').run(userId);
+  console.log('Wiped previous history for IB Exhibition Demo. Re-seeding clean dataset...');
 
   const sets = db.prepare('SELECT id FROM test_sets').all() as { id: number }[];
   if (sets.length === 0) return;
@@ -132,7 +139,7 @@ export function seedExhibitionDemo() {
     // Fetch terms for this set to make details realistic
     const terms = db.prepare('SELECT category, term FROM terms WHERE set_id = ?').all(setId) as {category: string, term: string}[];
 
-    const currentFree = Math.floor(score * 0.6); // ~24
+    const currentFree = Math.floor(score * 0.61); // ~24
     const currentCued = score - currentFree; // ~16
 
     const itemDetails = terms.map((t, idx) => {
@@ -158,24 +165,32 @@ export function seedExhibitionDemo() {
     const details = JSON.stringify({
       itemDetails,
       latency: 500 + Math.random() * 300,
-      intrusionCount: Math.round(Math.random() * 2)
+      intrusionCount: Math.round(Math.random() * 2),
+      freeRecallScore: currentFree
     });
 
     insertResult.run(userId, isoDate, score, 48, setId, details);
   }
-  console.log('Exhibition user created: ib_exhibition_demo / ib_exhibition_demo');
+  console.log('Exhibition user seeded with 5 test results: ib_exhibition_demo / ib_exhibition_demo');
 }
 
 export function seedDemoUser() {
   const username = 'p_thompson';
-  const existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username) as { id: number } | undefined;
+  let existingUser = db.prepare('SELECT id FROM users WHERE username = ?').get(username) as { id: number } | undefined;
   
-  if (existingUser) return;
+  let userId: number | bigint;
+  if (!existingUser) {
+    console.log('Seeding Patient Demo User (p_thompson / Patrick Thompson)...');
+    const passwordHash = bcrypt.hashSync('memory2026', 10);
+    const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, passwordHash);
+    userId = result.lastInsertRowid;
+  } else {
+    userId = existingUser.id;
+  }
 
-  console.log('Seeding Patient Demo (Patrick Thompson)...');
-  const passwordHash = bcrypt.hashSync('memory2026', 10);
-  const result = db.prepare('INSERT INTO users (username, password_hash) VALUES (?, ?)').run(username, passwordHash);
-  const userId = result.lastInsertRowid;
+  // Always clean and re-seed demo accounts to ensure consistent data structure
+  db.prepare('DELETE FROM results WHERE user_id = ?').run(userId);
+  console.log('Wiped previous history for Patient Demo User. Re-seeding clean dataset...');
 
   const sets = db.prepare('SELECT id FROM test_sets').all() as { id: number }[];
   if (sets.length === 0) return;
@@ -236,12 +251,13 @@ export function seedDemoUser() {
     const details = JSON.stringify({
       itemDetails,
       latency: 450 + (factor * 800) + Math.random() * 200, // Latency increases as cognition declines
-      intrusionCount: Math.floor(factor * 5) + Math.round(Math.random() * 2)
+      intrusionCount: Math.floor(factor * 5) + Math.round(Math.random() * 2),
+      freeRecallScore: currentFree
     });
 
     insertResult.run(userId, isoDate, score, 48, setId, details);
   }
-  console.log('Demo user created: p_thompson / memory2026');
+  console.log('Patient Demo User seeded with declining results: p_thompson / memory2026');
 }
 
 export function seedData() {

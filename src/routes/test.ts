@@ -118,21 +118,22 @@ router.get('/start', (req: any, res) => {
 
 router.post('/submit', (req: any, res) => {
   try {
-    const { setId, score, totalItems, details, latency, intrusionCount } = req.body;
+    const { setId, score, totalItems, details, latency, intrusionCount, freeRecallScore } = req.body;
     
     // Store more detailed metrics
     const extendedDetails = {
       itemDetails: details,
       latency,
-      intrusionCount
+      intrusionCount,
+      freeRecallScore: typeof freeRecallScore === 'number' ? freeRecallScore : 0
     };
 
-    db.prepare(`
+    const runResult = db.prepare(`
       INSERT INTO results (user_id, score, total_items, set_id, details)
       VALUES (?, ?, ?, ?, ?)
     `).run(req.user.id, score, totalItems, setId, JSON.stringify(extendedDetails));
     
-    res.json({ success: true });
+    res.json({ success: true, id: runResult.lastInsertRowid });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to submit results' });

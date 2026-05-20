@@ -827,7 +827,7 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
                   setPhase('intro');
                 }}
                 className={`w-full text-left text-xs px-2.5 py-1.5 rounded-lg font-medium transition-all ${
-                  phase === 'intro' ? 'bg-stone-900 text-white' : 'hover:bg-stone-50 text-stone-700'
+                  (phase as string) === 'intro' ? 'bg-stone-900 text-white' : 'hover:bg-stone-50 text-stone-700'
                 }`}
               >
                 1. Assessment Intro
@@ -867,7 +867,7 @@ export default function TestRunner({ onComplete }: TestRunnerProps) {
                   setPhase('free-recall');
                   // Seed words if empty
                   if (freeRecallList.every(x => x === '')) {
-                    const demoWords = [...freeRecallList];
+                    const demoWords = [...freeRecallList] as string[];
                     demoWords[0] = 'Apple';
                     demoWords[1] = 'Ladybird';
                     demoWords[2] = 'Table';

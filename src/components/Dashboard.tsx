@@ -282,27 +282,33 @@ export default function Dashboard() {
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                           {(() => {
                             try {
-                              const details = typeof h.details === 'string' ? JSON.parse(h.details) : h.details;
-                              if (!details || !Array.isArray(details)) return <p className="text-sm text-stone-400">No details available.</p>;
+                              const parsedDetails = typeof h.details === 'string' ? JSON.parse(h.details) : h.details;
+                              const items = Array.isArray(parsedDetails) ? parsedDetails : (parsedDetails?.itemDetails || []);
+                              if (!items || !Array.isArray(items) || items.length === 0) {
+                                return <p className="text-sm text-stone-400">No details available.</p>;
+                              }
                               
-                              return details.map((item: any, idx: number) => (
-                                <div key={idx} className={`flex items-center justify-between p-3 rounded-lg border ${
-                                  item.isCorrect ? 'bg-white border-stone-200' : 'bg-red-50 border-red-100'
-                                }`}>
-                                  <div>
-                                    <div className="text-xs text-stone-500">{item.category}</div>
-                                    <div className="text-sm font-medium text-stone-900">{item.term}</div>
-                                  </div>
-                                  {item.isCorrect ? (
-                                    <Check className="w-4 h-4 text-emerald-500" />
-                                  ) : (
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs text-red-500 line-through">{item.userAnswer || '(empty)'}</span>
-                                      <X className="w-4 h-4 text-red-500" />
+                              return items.map((item: any, idx: number) => {
+                                const isCorrect = item.isCorrect !== undefined ? item.isCorrect : item.correct;
+                                return (
+                                  <div key={idx} className={`flex items-center justify-between p-3 rounded-lg border ${
+                                    isCorrect ? 'bg-white border-stone-200' : 'bg-red-50 border-red-100'
+                                  }`}>
+                                    <div>
+                                      <div className="text-xs text-stone-500">{item.category}</div>
+                                      <div className="text-sm font-medium text-stone-900">{item.term}</div>
                                     </div>
-                                  )}
-                                </div>
-                              ));
+                                    {isCorrect ? (
+                                      <Check className="w-4 h-4 text-emerald-500" />
+                                    ) : (
+                                      <div className="flex items-center gap-2">
+                                        <span className="text-xs text-red-500 line-through">{item.userAnswer || '(empty)'}</span>
+                                        <X className="w-4 h-4 text-red-500" />
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              });
                             } catch (e) {
                               return <p className="text-sm text-stone-400">Error loading details.</p>;
                             }
