@@ -49,6 +49,34 @@ export default function Login() {
     }
   };
 
+  const handleQuickLogin = async (presetUser: string, presetPass: string) => {
+    setError('');
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: presetUser, password: presetPass }),
+      });
+      
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('Non-JSON response:', text);
+        throw new Error(`Server error: ${res.status}. Please check backend logs.`);
+      }
+
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.error || 'Quick Login failed');
+      }
+      
+      login(data.user);
+    } catch (err: any) {
+      setError(err.message);
+    }
+  };
+
   const handleMaintenanceLogin = async (e: FormEvent) => {
     e.preventDefault();
     setMaintenanceError('');
@@ -126,6 +154,51 @@ export default function Login() {
         </form>
         
         <div className="mt-8 text-center space-y-6">
+          {!isRegistering && (
+            <div className="pt-6 border-t border-stone-100 text-left">
+              <h3 className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-3 text-center">
+                Select a Preset Profile to Explore
+              </h3>
+              <div className="space-y-2.5">
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('ib_exhibition_demo', 'ib_exhibition_demo')}
+                  className="w-full text-left p-3.5 rounded-xl border border-stone-200 hover:border-stone-900 bg-stone-50 hover:bg-stone-50/50 transition-all flex flex-col group cursor-pointer"
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <span className="font-serif text-sm font-semibold text-stone-900">
+                      Exhibition Mode
+                    </span>
+                    <span className="text-[9px] font-sans bg-amber-50 text-amber-800 font-bold px-1.5 py-0.5 rounded border border-amber-200 uppercase tracking-wider">
+                      Phase Jumper Menu
+                    </span>
+                  </div>
+                  <span className="text-xs text-stone-500 mt-1 font-sans">
+                    Logs in as <code className="bg-stone-100 text-stone-700 px-1 py-0.5 rounded">ib_exhibition_demo</code>. Includes the interactive step-skip menu for presentations.
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleQuickLogin('p_thompson', 'memory2026')}
+                  className="w-full text-left p-3.5 rounded-xl border border-stone-200 hover:border-stone-900 bg-stone-50 hover:bg-stone-50/50 transition-all flex flex-col group cursor-pointer"
+                >
+                  <div className="flex justify-between items-center w-full">
+                    <span className="font-serif text-sm font-semibold text-stone-900">
+                      Patrick Thompson (Patient)
+                    </span>
+                    <span className="text-[9px] font-sans bg-emerald-50 text-emerald-800 font-bold px-1.5 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
+                      12 Pre-Seeded Runs
+                    </span>
+                  </div>
+                  <span className="text-xs text-stone-500 mt-1 font-sans">
+                    Logs in as <code className="bg-stone-100 text-stone-700 px-1 py-0.5 rounded">p_thompson</code>. Displays a clinical 40-day progressive cognitive decline.
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => setIsRegistering(!isRegistering)}
             className="block w-full text-stone-500 text-sm hover:text-stone-900 transition-colors"

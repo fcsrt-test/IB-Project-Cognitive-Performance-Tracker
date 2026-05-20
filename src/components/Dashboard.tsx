@@ -125,6 +125,18 @@ export default function Dashboard() {
       </header>
 
       <main className="container mx-auto px-4 py-8 max-w-5xl">
+        {user?.username === 'ib_exhibition_demo' && (
+          <div className="bg-amber-50/75 border border-amber-200 rounded-2xl p-4 mb-6 flex items-start gap-3 shadow-sm font-sans">
+            <span className="text-xl">💡</span>
+            <div>
+              <h4 className="font-serif text-sm font-semibold text-stone-900">Exhibition Mode Active</h4>
+              <p className="text-xs text-stone-600 mt-0.5 leading-relaxed">
+                To test the clinical assessment stages or skip segment timing, click <strong className="font-semibold">"New Assessment"</strong> below. Once the test initiates, the <strong className="font-semibold">Exhibition Phase Jumper menu</strong> will float in the bottom-right corner, allowing you to zip through different phases instantly!
+              </p>
+            </div>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
             <div className="flex items-center gap-3 mb-2">

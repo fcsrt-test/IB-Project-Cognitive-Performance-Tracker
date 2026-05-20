@@ -22,5 +22,20 @@
     },
     "allowImportingTsExtensions": true,
     "noEmit": true
-  }
+  },
+  "include": [
+    "src/components/**/*",
+    "src/context/**/*",
+    "src/App.tsx",
+    "src/index.css",
+    "src/main.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "server.ts",
+    "check_db.ts",
+    "src/db/**/*",
+    "src/routes/**/*"
+  ]
 }
